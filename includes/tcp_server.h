@@ -35,7 +35,7 @@ struct tcp_server_t
     uint8_t (*init)(tcp_server_t *);
     void (*set)(tcp_server_t *, const char *, uint16_t , uint16_t, uint16_t);
     void (*set_callbacks)(tcp_server_callbacks_t *, void *on_accept, void *on_handle, void *on_close);
-    uint8_t (*close)(tcp_server_t *);
+    void (*close)(tcp_server_t *);
     void (*wait)(tcp_server_t *);
     void (*signal_handler)(int);
 
@@ -44,19 +44,19 @@ struct tcp_server_t
     uint16_t backlog;
 };
 
-
 // STATIC VARIABLES
 static volatile int run = 1;
 
 
 // utils.c
 uint8_t fd_is_readable(tcp_server_t *server, tcp_client_t *client);
+int handle_client_file_descriptor(tcp_client_t *client);
 
 // server.c
 uint8_t init_tcp_server(tcp_server_t *server);
 void set_tcp_server(tcp_server_t *server, const char *addr, uint16_t port, uint16_t family, uint16_t backlog);
 void set_tcp_callbacks(tcp_server_callbacks_t *server_callbacks, void *on_accept, void *on_handle, void *on_close);
-uint8_t close_tcp_server(tcp_server_t *server);
+void close_tcp_server(tcp_server_t *server);
 void wait_tcp_server(tcp_server_t *server);
 void handle_signal(int sig);
 void create_tcp_server(tcp_server_t *server);
@@ -65,7 +65,7 @@ void delete_tcp_server(tcp_server_t *server);
 
 
 //////////////////////////////////////////////////////
-//      THIS PART IS EXAMPLE OF DIFFERENTS CALLBACKS
+//      CALLBACKS EXAMPLES
 //////////////////////////////////////////////////////
 
 // callbacks.c

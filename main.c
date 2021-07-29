@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "tcp_server.h"
+#include "log.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
@@ -11,8 +12,11 @@ int main(int argc, char **argv)
     server.set_callbacks(&server.callbacks, &callback_accept, &callback_handle, &callback_close);
     server.set(&server, argv[1], atoi(argv[2]), AF_INET, SOMAXCONN);
     
-    if (server.init(&server))
-        fprintf(stderr, "[-] Error intialize TCP server !\n");
+    if (server.init(&server)) {
+        print_error();
+        delete_tcp_server(&server);
+        return (1);
+    }
     
     server.wait(&server);
 

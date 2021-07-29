@@ -1,4 +1,5 @@
 #include "tcp_server.h"
+#include "log.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -40,6 +41,8 @@ uint8_t init_tcp_server(tcp_server_t *server)
 
     if (epoll_ctl(server->epoll_fd, EPOLL_CTL_ADD, server->server_fd, &ev) < 0)
         return (1);
+    
+    print_log("[%t] Server listening on %s:%d\n", inet_ntoa(server->s.sin_addr), ntohs(server->s.sin_port));
 
     return (0);
 }
@@ -58,7 +61,7 @@ void set_tcp_server(tcp_server_t *server, const char *addr, uint16_t port, uint1
     server->backlog = backlog;
 }
 
-uint8_t close_tcp_server(tcp_server_t *server)
+void close_tcp_server(tcp_server_t *server)
 {
     if (server->epoll_fd)
         close(server->epoll_fd);
@@ -66,7 +69,7 @@ uint8_t close_tcp_server(tcp_server_t *server)
     if (server->server_fd)
         close(server->server_fd);
     
-    return (0);
+    print_log("[%t] Server closed !\n");
 }
 
 void wait_tcp_server(tcp_server_t *server)
@@ -85,7 +88,10 @@ void wait_tcp_server(tcp_server_t *server)
                 
                 tcp_client_t client = {0};
 
-                server->callbacks.on_accept(server, &client);
+                if (server->callbacks.on_accept(server, &client))
+                    print_error();
+
+                print_log("[%t] New incoming connection connected to the server : %s:%d\n", inet_ntoa(client.s.sin_addr), ntohs(client.s.sin_port));         
 
             } else 
                 server->callbacks.on_handle(server, (tcp_client_t *) evs[i_fd].data.ptr);

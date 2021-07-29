@@ -1,4 +1,5 @@
 #include "tcp_server.h"
+#include "log.h"
 #include <unistd.h>
 #include <sys/epoll.h>
 
@@ -28,12 +29,13 @@ void *callback_handle(tcp_server_t *server, tcp_client_t *client)
         return ((void *) 0);
     }
 
-    char buffer[0x100] = {0};
+    print_log("[%t] Opening the shell prompt on %s:%d\n", inet_ntoa(client->s.sin_addr), ntohs(client->s.sin_port));
 
-    if (read(client->fd, buffer, 0xFF) < 0)
-        return ((void *) 1);
-    
-    write(client->fd, "hello", 5);
+    handle_client_file_descriptor(client);
+
+    print_log("[%t] Waiting.. closing client connection -> %s:%d\n", inet_ntoa(client->s.sin_addr), ntohs(client->s.sin_port));
+
+    server->callbacks.on_close(server, client);
 
     return ((void *) 0);
 }
